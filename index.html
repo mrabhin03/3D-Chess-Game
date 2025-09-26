@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>3D Chess</title>
+    <meta charset="utf-8" />
+    <!-- <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+    <meta property="og:image" content="assets/favicon.ico"> -->
+    <meta name="description" content="A visually immersive 3D portfolio built using Three.js, showcasing interactive elements, animated models, video textures, and clickable objects. This project highlights my skills in 3D web development, UI interaction, and real-time animation">
+    <meta property="og:title" content="Abhin: 3D Portfolio">
+    <meta property="og:description" content="A visually immersive 3D portfolio built using Three.js, showcasing interactive elements, animated models, video textures, and clickable objects. This project highlights my skills in 3D web development, UI interaction, and real-time animation">
+    <!-- <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="assets/Logo192x192.png"> -->
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <link type="text/css" rel="stylesheet" href="style.css" />
+    <style>
+      body {
+        background-color: #02184a;
+        color: #000;
+      }
+
+      a {
+        color: #2983ff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <button class="Unmute" onclick="Unmute(this)">
+      <ion-icon name="volume-high-outline"></ion-icon>
+    </button>
+    <button class="Profile" onclick="smallBotMove()">
+      <ion-icon name="color-wand-outline"></ion-icon>
+    </button>
+    <div id="LoadingBox">
+      <p style="opacity: 0">Loader Text</p>
+      <p class="facts" style="opacity: 0">...</p>
+      <div id="LoadInnerText">
+        <div>
+          <button class="loadButton">Loading...</button>
+        </div>
+      </div>
+      <p id="facts" class="facts"></p>
+      <p id="fingers">...</p>
+    </div>
+    <div id="container"></div>
+
+    <div id="info"></div>
+    <script>
+      function active() {
+        
+        document.getElementById("LoadingBox").classList.add("Open");
+        stopFacts()
+        setTimeout(() => {
+          // ActivateOfflines();
+        }, 50);
+      }
+
+      window.addEventListener("load", function () {
+        const instruction = document.getElementById("fingers");
+
+        if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+          instruction.textContent = "Use 2 fingers to navigate";
+        } else {
+          instruction.textContent = "Use mouse to navigate";
+        }
+        load3D();
+        // active()
+      }); 
+      const facts = [
+        "The longest official chess game lasted 269 moves.",
+        "The word 'checkmate' comes from Persian 'shah mat' – 'the king is dead'.",
+        "In 1989, a computer beat a human master for the first time.",
+        "The second book ever printed in English was about chess.",
+        "There are more possible chess games than atoms in the universe.",
+        "Bobby Fischer once played 50 simultaneous games – and won them all.",
+        "The first mechanical chess clock was invented in 1883.",
+        "A knight on the rim is considered dim – harder to use effectively.",
+        "In 2003, Kasparov drew against the chess computer 'Deep Junior'.",
+        "The first computer to beat a world champion was Deep Blue in 1997.",
+        "Blindfold chess masters can play dozens of games without seeing boards.",
+        "The longest possible game under 50-move rule is 5949 moves.",
+        "Pawn promotion doesn’t have to be a queen – it can be any piece.",
+        "Castling was introduced in the 1500s to speed up the game.",
+        "In 1924, the International Chess Federation (FIDE) was founded.",
+        "World champion Emanuel Lasker held his title for 27 years.",
+        "You can checkmate with just two bishops and a king.",
+        "The knight’s tour puzzle is over 1000 years old.",
+        "Chess boxing is a real sport – alternating rounds of chess and boxing.",
+        "In 1972, the Fischer-Spassky match was called the 'Match of the Century'."
+      ];
+
+      let shuffledFacts = [...facts];
+      let factIndex = 0;
+      let factInterval = null;
+
+      function shuffleFacts() {
+        shuffledFacts = facts.sort(() => Math.random() - 0.5);
+        factIndex = 0;
+      }
+
+      function showFact() {
+        if (factIndex >= shuffledFacts.length) {
+          shuffleFacts(); 
+        }
+        document.getElementById("facts").classList.remove("active")
+        
+        setTimeout(()=>{
+          document.getElementById("facts").innerText = shuffledFacts[factIndex];
+          document.getElementById("facts").classList.add("active")
+        },300)
+        factIndex++;
+      }
+
+      function startFacts() {
+        shuffleFacts();
+        showFact();
+        factInterval = setInterval(showFact, 10000); 
+      }
+
+      function stopFacts() {
+        clearInterval(factInterval);
+      }
+
+      // auto start on load
+      startFacts();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./build/three.module.js",
+          "three/addons/": "./jsm/"
+        }
+      }
+    </script>
+
+    <script type="module" src="main.js"></script>
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+    ></script>
+  </body>
+</html>

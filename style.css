@@ -1,0 +1,251 @@
+@import url("https://fonts.googleapis.com/css2?family=Concert+One&display=swap");
+
+body,
+html {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  background-color: black;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+body{
+  height: 100dvh;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+canvas {
+  pointer-events: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.Unmute,.Profile {
+  display: grid;
+  place-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 10px;
+  position: absolute;
+  top: 1.4rem;
+  right: 1.4rem;
+  font-size: 2rem;
+  border: 2px solid white;
+  color: white;
+  cursor: pointer;
+  background-color: rgb(7, 105, 151);
+  transition: all 0.3s ease-in-out;
+}
+.Profile{
+  right: 5.4rem;
+}
+
+.Unmute:active,.Profile:active {
+  transform: scale(0.3);
+}
+#LoadingBox {
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: linear-gradient(to bottom, #006abc, #00357a);
+  /* background-color: #00357a; */
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  box-sizing: border-box;
+  gap: 20px;
+  flex-direction: column;
+}
+.user-main {
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  height: 100%;
+  position: absolute;
+  display: flex;
+  place-content: center;
+  transform: scale(0);
+  transition: transform .4s ease-in-out;
+}
+.user-main.open{
+  transform: scale(1);
+}
+.user-details {
+  
+  max-width: 450px;
+  width: 100%;
+  height: 100%;
+  /* background: linear-gradient(to bottom, #006abc, #00357a); */
+  /* overflow: hidden; */
+  box-sizing: border-box;
+  position: relative;
+}
+.user-details> button{
+  border: none;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  border-radius: 5px;
+  background-color: #5f9ff3;
+  color: white;
+  transform: rotate(45deg);
+  font-size: 25px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition:  transform .3s ease-in-out;
+}
+.user-details> button:hover{
+  transform: scale(1.3);
+}
+.user-details ion-icon{
+  transition:  transform .3s ease-in-out;
+  transform: rotate(-45deg);
+}
+.user-details> button:hover ion-icon{
+  transform: rotate(0deg);
+}
+.user-details> iframe{
+  border-radius: 10px;
+  border: 3px solid white;
+  border-radius: 20px;
+  background-color: #c2cede;
+}
+
+p {
+  font-family: "Concert One", sans-serif;
+  color: white;
+  font-size: 24px;
+  text-shadow: 2px 2px 2px rgb(3, 105, 207);
+  padding: 15px;
+  text-align: center;
+}
+.facts{
+  margin: 0;
+  text-shadow:none;
+  font-size: 16px;
+  max-width: 500px;
+  animation: opaoff .3s ease-in-out forwards;
+}
+@keyframes opaoff {
+  100%{
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+.facts.active{
+  animation: opaOn .3s ease-in-out forwards;
+}
+
+@keyframes opaOn {
+  0%{
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100%{
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+#LoadingBox > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+.loadButton {
+  padding: 12px 40px;
+  border: 3px solid white;
+  font-family: "Concert One", sans-serif;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: 3px 3px 8px rgba(255, 255, 255, 0.351);
+  font-size: 1.5rem;
+  color: white;
+}
+
+.Open {
+  animation: openit 2s linear forwards;
+  border-radius: 30px;
+}
+@keyframes openit {
+  0% {
+    transform: scale(1) translateY(0px);
+  }
+  25% {
+    transform: scale(0.5);
+  }
+  30% {
+    transform: scale(0.5) translateY(-400px) rotate(5deg);
+  }
+  50% {
+    transform: scale(0.5) translateY(2000px);
+  }
+  100% {
+    transform: scale(0.5) translateY(2000px);
+    display: none;
+  }
+}
+
+.btn {
+  pointer-events: all !important;
+  font-family: "Concert One", sans-serif;
+  outline: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  background-color: rgb(2, 47, 110);
+  min-width: 200px;
+  border: 3px solid white;
+  border-radius: 10px;
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.578);
+  box-sizing: border-box;
+  padding: 12px 30px;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.btn:hover {
+  opacity: 0.95;
+}
+
+.btn .animation {
+  border-radius: 100%;
+  animation: ripple 0.6s linear infinite;
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 6, 6, 0.1),
+      0 0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 40px rgba(255, 255, 255, 0.1),
+      0 0 0 60px rgba(255, 255, 255, 0.1);
+  }
+
+  100% {
+    box-shadow: 0 0 0 20px rgba(255, 255, 255, 0.1),
+      0 0 0 40px rgba(255, 255, 255, 0.1), 0 0 0 60px rgba(255, 255, 255, 0.1),
+      0 0 0 80px rgba(255, 255, 255, 0);
+  }
+}
+@media (max-width:500px) {
+  .facts{
+    font-size: 14px;
+  }
+}
