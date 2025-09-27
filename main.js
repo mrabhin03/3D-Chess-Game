@@ -36,11 +36,11 @@ function initializeScene() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x7692e7);
   container.appendChild(renderer.domElement);
-   const ambient = new THREE.AmbientLight(0xffffff, 1);
+  const ambient = new THREE.AmbientLight(0xFFE4B6, 0.5);
   scene.add(ambient);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 2); 
-  dirLight.position.set(-12.54, 10.39, 11.59);
+  const dirLight = new THREE.DirectionalLight(0xFFE4B6, 1); 
+  dirLight.position.set(18.130, 15.780, 17.951);
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   dirLight.castShadow = !isMobile;
   if (!isMobile) {
@@ -64,8 +64,7 @@ function initializeRenderer() {
   }
   // Detect mobile
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-  renderer.setPixelRatio(isMobile ? 2 : window.devicePixelRatio);
-  console.log(window.innerWidth)
+  renderer.setPixelRatio(isMobile ? 2.5 : window.devicePixelRatio);
   renderer.setSize(Sizes.Width, Sizes.Height);
   renderer.toneMappingExposure = 2.5;
 }
@@ -85,12 +84,13 @@ function initializeControls() {
   controls.target.set(0,0,0);
   controls.enableDamping = true;
   controls.minPolarAngle = 0;
-  controls.maxPolarAngle = Math.PI / 2;
+  controls.maxPolarAngle = (Math.PI / 2)-0.29;
   // controls.minAzimuthAngle = -Math.PI;
   // controls.maxAzimuthAngle = Math.PI;
   controls.minDistance = 0;
-  controls.maxDistance = 6;
+  controls.maxDistance = 3.5;
   controls.zoomSpeed = 2;
+  controls.enablePan=false
   controls.update();
 }
 function initializeEnvironment() {
@@ -113,10 +113,11 @@ function initializeLoaders() {
     Floor:"ktx2/Background.ktx2",
     Black:"ktx2/BlackPiece.ktx2",
     Others:"ktx2/Others.ktx2",
-    Grass_Wall:"ktx2/SideGrass.ktx2",
     Square:"ktx2/TheSquares.ktx2",
     Tables:"ktx2/TheWoods.ktx2",
     White:"ktx2/WhitePicese.ktx2",
+    TheFlowers:"ktx2/SideItemsGrass.ktx2",
+    SideItems:"ktx2/NewSideItems.ktx2"
   };
 
   links = {
@@ -205,6 +206,9 @@ function TurnDisplay(turn){
 }
 function colorCheck(obj,color){
   let Theobj=null
+  if(obj.name.includes("shadowPlane")){
+    obj=obj.parent;
+  }
   if(obj.name.includes("Piece")){
     Theobj=obj
     
@@ -212,7 +216,7 @@ function colorCheck(obj,color){
     let temp=obj.name.split("_")
     let Post = temp[temp.length - 1];
     Theobj=ChessPieces.find(p => p.userData.NowAt == Post); 
-    if(!Theobj){
+    if(Theobj==null){
       return false
     }
   }
@@ -224,7 +228,7 @@ function handlePointerClick(e) {
     e.preventDefault();
 
     if (currentIntersects.length > 0) {
-      const obj = currentIntersects[0].object;
+      const obj = (currentIntersects[0].object.name.includes("shadowPlane"))?currentIntersects[0].object.parent:currentIntersects[0].object;
       for (const [key, url] of Object.entries(links)) {
         if (obj.name.includes(key)) {
           const win = window.open();
@@ -966,10 +970,10 @@ function load3D() {
                 tex.encoding = THREE.sRGBEncoding;
                 tex.minFilter = THREE.LinearMipmapLinearFilter;
                 tex.magFilter = THREE.LinearFilter;
-                if(child.name.includes("Grass_Wall")){
-                  child.scale.y-=0
-                  child.position.y-=.3
-                }
+                // if(child.name.includes("SideItems_Walls")){
+                //   child.scale.y+=.6
+                //   child.position.y+=1
+                // }
                 if(child.name.includes("Floor") || child.name.includes("Tables_Side")){
                   child.material = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
@@ -996,7 +1000,7 @@ function load3D() {
                   child.material = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
                     map: tex,  
-                    roughness:(child.name.includes("Chair"))?.7:.0,
+                    roughness:(child.name.includes("Chair")||child.name.includes("Leg"))?.7:.0,
                     metalness:.0,      
                     clearcoat:0.05
                   });
@@ -1015,7 +1019,7 @@ function load3D() {
                   child.material = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
                     map: tex,  
-                    roughness:.1,
+                    roughness:1,
                   });
                 }
 
