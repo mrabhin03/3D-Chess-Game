@@ -31,7 +31,7 @@
     <button class="Unmute" onclick="Unmute(this)">
       <ion-icon name="volume-high-outline"></ion-icon>
     </button>
-    <button class="Profile" onclick="smallBotMove()">
+    <button class="Profile" onclick="CameraTop()">
       <ion-icon name="color-wand-outline"></ion-icon>
     </button>
     <div id="LoadingBox">
@@ -50,12 +50,29 @@
     <div id="info"></div>
     <script>
       function active() {
-        
-        document.getElementById("LoadingBox").classList.add("Open");
         stopFacts()
-        setTimeout(() => {
-          // ActivateOfflines();
-        }, 50);
+        document.getElementById("LoadingBox").style.justifyContent='center';
+        document.getElementById("LoadingBox").innerHTML=`
+          <div>
+            <div><button class="btn options" onclick="ModeSet(0)"><i class="animation"></i>1 Vs 1<i class="animation"></i></button></div>
+            <div><button class="btn options" onclick="VsBot()"><i class="animation"></i>You Vs Bot<i class="animation"></i></button></div>
+            <div><button class="btn options" onclick="ModeSet(3)"><i class="animation"></i>View Only<i class="animation"></i></button></div>
+          </div>`;
+      }
+      function ModeSet(Mode){
+        document.getElementById("LoadingBox").classList.add("Open");
+        setBotMode(Mode)
+      }
+
+
+
+      function VsBot(){
+        document.getElementById("LoadingBox").innerHTML=`
+          <div>
+            <p style="margin: 0;background-color: rgba(0, 0, 0, 0.596);border-radius: 10px;">Play us</p>
+            <div><button class="btn options" onclick="ModeSet(2)" style="color: black;background-color: white;"><i class=""></i>White<i class=""></i></button></div>
+            <div><button class="btn options" onclick="ModeSet(1)"><i class=""></i>Black<i class=""></i></button></div>
+          </div>`
       }
 
       window.addEventListener("load", function () {
@@ -102,7 +119,7 @@
       }
 
       function showFact() {
-        if (factIndex >= shuffledFacts.length) {
+        if (factIndex >= shuffledFacts.length-1) {
           shuffleFacts(); 
         }
         document.getElementById("facts").classList.remove("active")

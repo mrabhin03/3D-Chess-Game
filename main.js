@@ -26,6 +26,8 @@ let Whiteout=0
 let BlackStorage=[];
 let WhiteStorage=[];
 
+let botMode=0;
+
 function saveOriginalTransform(obj) {
     obj.userData.MainScale = obj.scale.clone();
     obj.userData.MainRotation = obj.rotation.clone();
@@ -44,19 +46,21 @@ function initializeScene() {
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   dirLight.castShadow = !isMobile;
   if (!isMobile) {
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.mapSize.width = 512;
+    dirLight.shadow.mapSize.height = 512;
   }
   scene.add(dirLight);
 }
 function initializeCamera() {
   camera = new THREE.PerspectiveCamera(
-    45,
+  45,
     Sizes.Width / Sizes.Height,
-    0.1,
+    0.02,
     100
   );
   camera.position.set(0,2,-2);
+  
+  
 }
 function initializeRenderer() {
   if (!renderer) {
@@ -68,15 +72,6 @@ function initializeRenderer() {
   renderer.setSize(Sizes.Width, Sizes.Height);
   renderer.toneMappingExposure = 2.5;
 }
-// function initializeRenderer() {
-//   if (!renderer) {
-//     renderer = new THREE.WebGLRenderer({ antialias: true });
-//   }
-//   renderer.setPixelRatio(window.devicePixelRatio);
-//   renderer.setSize(Sizes.Width, Sizes.Height);
-// renderer.toneMappingExposure = 2.5; 
-
-// }
 
 
 function initializeControls() {
@@ -85,8 +80,6 @@ function initializeControls() {
   controls.enableDamping = true;
   controls.minPolarAngle = 0;
   controls.maxPolarAngle = (Math.PI / 2)-0.29;
-  // controls.minAzimuthAngle = -Math.PI;
-  // controls.maxAzimuthAngle = Math.PI;
   controls.minDistance = 0;
   controls.maxDistance = 3.5;
   controls.zoomSpeed = 2;
@@ -188,7 +181,7 @@ function smallBotMove() {
 // }
 
 function TurnDisplay(turn){
-  if(turn==-1){
+  if(turn==-1 || botMode==3){
     TurnDis[0].position.y=TurnDis[0].userData.MainPosition.y;
     TurnDis[1].position.y=TurnDis[1].userData.MainPosition.y;
     return;
@@ -244,6 +237,15 @@ function handlePointerClick(e) {
       };
       if(gamepause){
         return
+      }
+      if(obj.name.includes("Square") || obj.name.includes("Piece")){
+        if(botMode==3){
+          return
+        }else if(botMode==1 && (game.turn()=='w')){
+          return
+        }else if(botMode==2 && (game.turn()=='b')){
+          return
+        }
       }
       if(selectedPiece && !colorCheck(obj,currentMover)){
         let nextMove=null;
@@ -523,7 +525,8 @@ function MoveTo(from,To){
     if(!game.game_over()){
       setTimeout(()=>{
         TurnDisplay((game.turn()=='w')?0:1)
-        gamepause=false
+        gamepause=false;
+        botChecker()
       },(delay+duration+0.2)*600)
     }else{
       TurnDisplay(-1)
@@ -540,6 +543,17 @@ function MoveTo(from,To){
   }
   
   isCheck()
+  
+}
+
+function botChecker(){
+  if(botMode==3){
+    setTimeout(smallBotMove,2000)
+  }else if(botMode==1 && (game.turn()=='w')){
+    setTimeout(smallBotMove,1000)
+  }else if(botMode==2 && (game.turn()=='b')){
+    setTimeout(smallBotMove,1000)
+  }
 }
 function WinnerShowCase(checkmate){
   
@@ -1000,7 +1014,7 @@ function load3D() {
                   child.material = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
                     map: tex,  
-                    roughness:(child.name.includes("Chair")||child.name.includes("Leg"))?.7:.0,
+                    roughness:(child.name.includes("Chair")||child.name.includes("Leg"))?.7:.05,
                     metalness:.0,      
                     clearcoat:0.05
                   });
@@ -1210,8 +1224,32 @@ function load3D() {
 function Start3DPage() {
   document.getElementById(
     "LoadInnerText"
-  ).innerHTML = `<div><button class="btn" onclick="active()"><i class="animation"></i>Enter<i class="animation"></i></button></div>`;
+  ).innerHTML = `<div><button class="btn" onclick="active()"><i class="animation"></i>Start<i class="animation"></i></button></div>`;
 }
+function setBotMode(Mode){
+  botMode=Mode
+  if(Mode==3){
+    TurnDisplay(-1)
+  }else if(Mode==1){
+    camera.position.set(0,1.5,2);
+  }
+  setTimeout(botChecker,1000)
+}
+function CameraTop() {
+  gsap.to(camera.position, {
+    x: 0,
+    y: 1.5,
+    z: -0.001,
+    duration: 4,
+    ease: "power2.inOut",
+    onUpdate: () => {
+      camera.lookAt(0, 0, 0);
+    }
+  });
+}
+
+
 window.load3D = load3D;
-window.smallBotMove = smallBotMove;
+window.CameraTop = CameraTop;
+window.setBotMode = setBotMode;
 
