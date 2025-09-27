@@ -25,6 +25,7 @@ let Blackout=0
 let Whiteout=0
 let BlackStorage=[];
 let WhiteStorage=[];
+const Socials=[]
 
 let botMode=0;
 
@@ -114,7 +115,7 @@ function initializeLoaders() {
   };
 
   links = {
-    GitHub: "https://github.com/mrabhin03",
+    Github: "https://github.com/mrabhin03",
     Insta: "https://www.instagram.com/mr_abhin._",
     Linkedin: "https://www.linkedin.com/in/mr-abhin",
   };
@@ -144,41 +145,104 @@ function handlePointerMove(e) {
 let selectedPiece=null;
 let canMoveTo=[];
 
+
+
+
+
 function smallBotMove() {
   if (game.game_over()) {
     alert('Game Over!');
     return;
   }
-  let moves = game.moves({ verbose: true });
-  let move = moves[Math.floor(Math.random() * moves.length)];
-  MoveTo(move.from,move.to)
+  let depth = 3;
+  let bestMove = getBestMove(game, depth);
+  // canMoveTo = game.moves({ square: bestMove.from, verbose: true });
+  canMoveTo=[
+    {to: bestMove.to},
+    {to: bestMove.from}
+  ]
+  highlightMove();
+  setTimeout(() => {
+    MoveTo(bestMove.from, bestMove.to);
+  }, 700);
 }
-// const drawMoves = [
-//   { from: "g1", to: "f3" }, // 1. Nf3
-//   { from: "g8", to: "f6" }, // 1... Nf6
-//   { from: "f3", to: "g1" }, // 2. Ng1
-//   { from: "f6", to: "g8" }, // 2... Ng8
-//   { from: "g1", to: "f3" }, // 3. Nf3
-//   { from: "g8", to: "f6" }, // 3... Nf6
-//   { from: "f3", to: "g1" }, // 4. Ng1
-//   { from: "f6", to: "g8" }, // 4... Ng8
-//   { from: "g1", to: "f3" }, // 5. Nf3
-//   { from: "g8", to: "f6" }, // 5... Nf6
-//   { from: "f3", to: "g1" }, // 6. Ng1
-//   { from: "f6", to: "g8" }
-// ];
-// let ro0=0
-// function smallBotMove2() {
-//   if (game.game_over()) {
-//     alert('Game Over!');
-//     return;
-//   }
-//   if(gamepause){
-//     return
-//   }
-//   MoveTo(drawMoves[ro0].from,drawMoves[ro0].to)
-//   ro0++
-// }
+
+function EvaluateuateBoard(game) {
+  const piecEvaluateues = {
+    p: 100,
+    n: 320,
+    b: 330,
+    r: 500,
+    q: 900,
+    k: 20000
+  };
+
+  let board = game.board();
+  let score = 0;
+
+  for (let row of board) {
+    for (let piece of row) {
+      if (piece) {
+        let value = piecEvaluateues[piece.type];
+        score += piece.color === 'w' ? value : -value;
+      }
+    }
+  }
+  return score;
+}
+
+// Minimax with alpha-beta pruning
+function minimax(game, depth, alpha, beta, isMaximizing) {
+  if (depth === 0 || game.game_over()) {
+    return EvaluateuateBoard(game);
+  }
+
+  let moves = game.moves({ verbose: true });
+
+  if (isMaximizing) {
+    let maxEvaluate = -Infinity;
+    for (let move of moves) {
+      game.move(move);
+      let Evaluate = minimax(game, depth - 1, alpha, beta, false);
+      game.undo();
+      maxEvaluate = Math.max(maxEvaluate, Evaluate);
+      alpha = Math.max(alpha, Evaluate);
+      if (beta <= alpha) break;
+    }
+    return maxEvaluate;
+  } else {
+    let minEvaluate = Infinity;
+    for (let move of moves) {
+      game.move(move);
+      let Evaluate = minimax(game, depth - 1, alpha, beta, true);
+      game.undo();
+      minEvaluate = Math.min(minEvaluate, Evaluate);
+      beta = Math.min(beta, Evaluate);
+      if (beta <= alpha) break;
+    }
+    return minEvaluate;
+  }
+}
+
+function getBestMove(game, depth) {
+  let moves = game.moves({ verbose: true });
+  let bestMove = null;
+  let bestValue = -Infinity;
+
+  for (let move of moves) {
+    game.move(move);
+    let boardValue = minimax(game, depth - 1, -Infinity, Infinity, false);
+    game.undo();
+    if (boardValue > bestValue) {
+      bestValue = boardValue;
+      bestMove = move;
+    }
+  }
+  return bestMove;
+}
+
+
+
 
 function TurnDisplay(turn){
   if(turn==-1 || botMode==3){
@@ -310,7 +374,12 @@ function highlightMove(){
     }
     const piece = ChessPieces.find(p => p.userData.NowAt == ele.to); 
     if (piece) {
-      Squares[ele.to].material.color.set(0xca1313);
+      if(piece.userData.color==((game.turn()=='w')?"White":"Black")){
+        Squares[ele.to].material.color.set(0x1313ca);
+      }else{
+        Squares[ele.to].material.color.set(0xca1313);
+      }
+      
       gsap.to(piece.position, {
         y: piece.userData.MainPosition.y+0.01,
         duration: .3,
@@ -1019,6 +1088,7 @@ function load3D() {
                     clearcoat:0.05
                   });
                 }else if(child.name.includes("Github")||child.name.includes("Insta")||  child.name.includes("Linkedin")){
+                  Socials.push(child)
                   child.material = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
                     map: tex,  
@@ -1231,7 +1301,10 @@ function setBotMode(Mode){
   if(Mode==3){
     TurnDisplay(-1)
   }else if(Mode==1){
-    camera.position.set(0,1.5,2);
+    camera.position.set(0,2,2);
+    Socials.forEach((ele)=>{
+      ele.rotation.y+=Math.PI
+    })
   }
   setTimeout(botChecker,1000)
 }
