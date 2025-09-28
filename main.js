@@ -13,6 +13,7 @@ const Sizes = { Width: window.innerWidth, Height: window.innerHeight };
 const targetObjects = [];
 const ChessPieces = [];
 const Squares=[];
+const DiffPieces=[]
 let currentIntersects = [];
 let HoveredObject = null;
 let textureKey, game,links;
@@ -60,8 +61,6 @@ function initializeCamera() {
     100
   );
   camera.position.set(0,2,-2);
-  
-  
 }
 function initializeRenderer() {
   if (!renderer) {
@@ -146,25 +145,25 @@ let selectedPiece=null;
 let canMoveTo=[];
 
 let ques=0;
-const MovesList = [
-  { from: "d2", to: "d4" }, // 1. d4
-  { from: "d7", to: "d5" }, // 1... d5
-  { from: "c2", to: "c4" }, // 2. c4
-  { from: "e7", to: "e6" }, // 2... e6
-  { from: "b1", to: "c3" }, // 3. Nc3
-  { from: "g8", to: "f6" }, // 3... Nf6
-  { from: "c1", to: "d2" }, // 4. Bd2 (freeing queen-side rook and king)
-  { from: "b8", to: "c6" }, // 4... Nc6
-  { from: "d1", to: "c2" }, // 5. Qc2 (preparing castling)
-  { from: "f8", to: "e7" }, // 5... Be7
-  { from: "e1", to: "c1" }  // 6. O-O-O (white queenside castling)
-];
+// const MovesList = [
+//   { from: "d2", to: "d4" }, // 1. d4
+//   { from: "d7", to: "d5" }, // 1... d5
+//   { from: "c2", to: "c4" }, // 2. c4
+//   { from: "e7", to: "e6" }, // 2... e6
+//   { from: "b1", to: "c3" }, // 3. Nc3
+//   { from: "g8", to: "f6" }, // 3... Nf6
+//   { from: "c1", to: "d2" }, // 4. Bd2 (freeing queen-side rook and king)
+//   { from: "b8", to: "c6" }, // 4... Nc6
+//   { from: "d1", to: "c2" }, // 5. Qc2 (preparing castling)
+//   { from: "f8", to: "e7" }, // 5... Be7
+//   { from: "e1", to: "c1" }  // 6. O-O-O (white queenside castling)
+// ];
 
 
-function AutoCheck(){
-    MoveTo(MovesList[ques].from,MovesList[ques].to)
-    ques++
-}
+// function AutoCheck(){
+//     MoveTo(MovesList[ques].from,MovesList[ques].to)
+//     ques++
+// }
 
 
 async function smallBotMove() {
@@ -173,17 +172,16 @@ async function smallBotMove() {
     return;
   }
   const bestMove = await askStockfishMove();
-  // MoveTo(bestMove.slice(0, 2), bestMove.slice(2, 4));
-  // let depth = 3;
-  // let bestMove = getBestMove(game, depth);
-  // // canMoveTo = game.moves({ square: bestMove.from, verbose: true });
+  let out =bestMove[4]
+  out=((out)?out:"q")
+  console.log("Bot Moved: "+bestMove)
   canMoveTo=[
     {to: bestMove.slice(0, 2)},
     {to: bestMove.slice(2, 4)}
   ]
   highlightMove();
   setTimeout(() => {
-    MoveTo(bestMove.slice(0, 2), bestMove.slice(2, 4));
+    PromotionCheck(bestMove.slice(0, 2), bestMove.slice(2, 4),out);
   }, 700);
 }
 const engine = new Worker("stockfish/stockfish.js");
@@ -285,7 +283,7 @@ function handlePointerClick(e) {
         if (!canMoveTo.some(move => move.to === nextMove)) {
           return;
         }
-        MoveTo(selectedPiece.userData.NowAt,nextMove)
+        PromotionCheck(selectedPiece.userData.NowAt,nextMove)
         return;
       }else{
         clearSelectPiece();
@@ -322,6 +320,32 @@ function handlePointerClick(e) {
         clearSelectPiece()
       }
   }
+}
+
+function savePromotion(from,to,pro){
+  const promosObj=document.getElementById("promosion")
+  promosObj.classList.remove("promot")
+  promosObj.innerHTML=``
+  PromotionCheck(from,to,pro)
+}
+
+function PromotionCheck(from,to,pro){
+  if(pro){
+    return MoveTo(from,to,pro);
+  }
+  let piece = game.get(from);
+  let promoPiece='q';
+  if (piece && piece.type === "p" && ((piece.color === "w" && to[1] === "8") ||(piece.color === "b" && to[1] === "1"))) {
+      const promosObj=document.getElementById("promosion")
+      promosObj.classList.add("promot")
+      promosObj.innerHTML=`
+        <button onclick="savePromotion('${from}','${to}','q')">♕ Queen</button>
+        <button onclick="savePromotion('${from}','${to}','r')">♖ Rook</button>
+        <button onclick="savePromotion('${from}','${to}','b')">♗ Bishop</button>
+        <button onclick="savePromotion('${from}','${to}','n')">♘ Knight</button>`;
+    return;
+  }
+  return MoveTo(from,to,promoPiece);
 }
 function highlightMove(){
   for(let j=0;j<canMoveTo.length;j++){
@@ -492,7 +516,7 @@ function MoveAnimation(PieceToMove,fromSquare,ToSquare,delay,jump){
 
 
 
-function MoveTo(from,To){
+function MoveTo(from,To,promoPiece){
   if(gamepause){
     return
   }
@@ -508,8 +532,10 @@ function MoveTo(from,To){
   }
   if(PieceToMove && ToSquare){
     clearSelectPiece();
-    let move = game.move({ from: from, to: To, promotion: 'q' });
+    let move = game.move({ from: from, to: To, promotion: (promoPiece)?promoPiece:"q" });
     if(move==null){
+      console.log("Move Failed")
+      botChecker()
       gamepause=false
       return
     }
@@ -517,9 +543,9 @@ function MoveTo(from,To){
     let delay=CapturePiece(To)?.1:0;
     PieceToMove.userData.NowAt=To
     const duration=MoveAnimation(PieceToMove,Squares[from],ToSquare,delay,(PieceToMove.name.includes("Knight")))
-    if((move.san=="O-O")||(move.san=="O-O-O")){
+    if(move.flags.includes("k")||move.flags.includes("q")){
       let fromPoint=null,toPoint=null;
-      if(move.san=="O-O"){
+      if(move.flags.includes("k")){
         fromPoint=(move.color=='w')?"h1":"h8";
         toPoint=(move.color=='w')?"f1":"f8";
       }else{
@@ -539,31 +565,30 @@ function MoveTo(from,To){
     
     if(move.promotion){
       let thecolor=(move.color=='w')?"White":"Black";
-     for(let i=0;i<ChessPieces.length;i++){
-        if(ChessPieces[i].name.includes("Queen")&&ChessPieces[i].userData.color==thecolor){
-          const queenClone = duplicatePiece(ChessPieces[i]);
-          queenClone.position.copy(ToSquare.userData.MainPosition);
-          ChessPieces.push(queenClone);
-          targetObjects.push(queenClone);
-          queenClone.userData.NowAt=To
-          saveOriginalTransform(queenClone)
-          gsap.to(queenClone.scale, {
-            x: 0,
-            y: 0,
-            z: 0,
-            duration: 0.0,
-            ease: "back.inOut",
-          });
-          gsap.to(queenClone.scale, {
-            x: 1,
-            y: 1,
-            z: 1,
-            delay: delay+duration-0.2,
-            duration: 0.5,
-            ease: "back.inOut",
-          });
-          break
-        }
+      const newPiece=(move.promotion=="n")?"Kn":move.promotion.toUpperCase();
+      const result = Object.keys(DiffPieces).find(key => key.startsWith((thecolor+"_"+newPiece)));
+      if(result){
+        const queenClone = duplicatePiece(DiffPieces[result]);
+        queenClone.position.copy(ToSquare.userData.MainPosition);
+        ChessPieces.push(queenClone);
+        targetObjects.push(queenClone);
+        queenClone.userData.NowAt=To
+        saveOriginalTransform(queenClone)
+        gsap.to(queenClone.scale, {
+          x: 0,
+          y: 0,
+          z: 0,
+          duration: 0.0,
+          ease: "back.inOut",
+        });
+        gsap.to(queenClone.scale, {
+          x: 1,
+          y: 1,
+          z: 1,
+          delay: delay+duration-0.2,
+          duration: 0.5,
+          ease: "back.inOut",
+        });
       }
     
       
@@ -593,7 +618,13 @@ function MoveTo(from,To){
   }
   if (game.game_over()) {
     setTimeout(()=>{
-      WinnerShowCase(game.in_checkmate())
+      if(game.in_checkmate()){
+        let Winner=(game.turn()=='w')?"Black":"White";
+        alert(Winner+" won the match")
+      }else{
+        alert("Its a draw")
+      }
+      document.getElementById("celebrate").classList.add("active")
     },1000)
     
     return;
@@ -612,12 +643,13 @@ function botChecker(){
     setTimeout(smallBotMove,500)
   }
 }
-function WinnerShowCase(checkmate){
-  
-  if(checkmate){
-    console.log((game.turn()=='w')?"Black":"White")
+function WinnerShowCase(){
+  if (!game.game_over()) {
+    return
+  }
+  document.getElementById("celebrate").classList.remove("active")
+  if(game.in_checkmate()){
     let Winner=(game.turn()=='w')?"Black":"White";
-    alert(Winner+" won the match")
     ChessPieces.forEach((ele)=>{
       if(!ele.name.includes(Winner)){
         gsap.to(ele.scale, {
@@ -634,7 +666,6 @@ function WinnerShowCase(checkmate){
       SingleWinner(ChessPieces,Squares)
     },1000)
   }else{
-    alert("Its a draw")
     drawShowCase(ChessPieces,Squares)
   }
 }
@@ -1130,6 +1161,9 @@ function load3D() {
             child.userData.NowAt=testvar[testvar.length-1];
             child.userData.color=testvar[0].split("-")[0];
             child.userData.Name=testvar[1]
+            if(!(DiffPieces[testvar[0].split("-")[0]+"_"+testvar[1]])){
+              DiffPieces[testvar[0].split("-")[0]+"_"+testvar[1]]=child;
+            }
             child.userData.originalColor = child.material.color.clone();
             const shadowMaterial = new THREE.ShaderMaterial({
               transparent: true,
@@ -1297,10 +1331,15 @@ function setBotMode(Mode){
   setTimeout(botChecker,1000)
 }
 function CameraTop() {
+  const targetPosition = new THREE.Vector3(
+    0,
+    1.3,
+    0.001
+  );
   gsap.to(camera.position, {
-    x: 0,
-    y: 1.5,
-    z: -0.001,
+    x: targetPosition.x,
+    y: targetPosition.y,
+    z: targetPosition.z*((botMode==1)?1:-1),
     duration: 4,
     ease: "power2.inOut",
     onUpdate: () => {
@@ -1313,5 +1352,6 @@ function CameraTop() {
 window.load3D = load3D;
 window.CameraTop = CameraTop;
 window.setBotMode = setBotMode;
-window.AutoCheck=AutoCheck
+window.WinnerShowCase=WinnerShowCase
+window.savePromotion=savePromotion
 

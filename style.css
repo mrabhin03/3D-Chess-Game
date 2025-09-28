@@ -24,7 +24,7 @@ canvas {
   width: 100%;
   height: 100%;
 }
-.Unmute,.Profile {
+.Unmute,.ViewPoint {
   display: grid;
   place-content: center;
   width: 3.5rem;
@@ -39,9 +39,6 @@ canvas {
   cursor: pointer;
   background-color: #000000;
   transition: all 0.3s ease-in-out;
-}
-.Profile{
-  right: 5.4rem;
 }
 
 .Unmute:active,.Profile:active {
@@ -207,6 +204,75 @@ p {
   }
 }
 
+
+#celebrate{
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  padding: 20px 10px;
+  justify-content: center;
+  box-sizing: border-box;
+  transform: translateY(500px);
+  /* display: none; */
+}
+#celebrate.active{
+  transition: all .5s ease-in-out;
+  transform: translateY(0px);
+  display: flex;
+}
+#celebrate button{
+  font-family: "Concert One", sans-serif;
+  outline: 0;
+  border: none;
+  background-color: #683104b3;
+  border: 2px solid white;
+  border-radius: 10px;
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.578);
+  box-sizing: border-box;
+  padding: 12px 40px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+}
+#promosion{
+  display: none;
+}
+.promot{
+  user-select: none;      
+  -webkit-user-drag: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.079);
+  backdrop-filter: blur(5px);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+}
+.promot button{
+  font-family: "Concert One", sans-serif;
+  outline: 0;
+  border: none;
+  background-color: #1a100194;
+  border: 2px solid white;
+  border-radius: 10px;
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.578);
+  box-sizing: border-box;
+  padding: 12px 20px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 100;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+  min-width: 140px;
+}
 .btn {
   pointer-events: all !important;
   font-family: "Concert One", sans-serif;
