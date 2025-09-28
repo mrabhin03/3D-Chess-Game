@@ -145,103 +145,66 @@ function handlePointerMove(e) {
 let selectedPiece=null;
 let canMoveTo=[];
 
+let ques=0;
+const MovesList = [
+  { from: "d2", to: "d4" }, // 1. d4
+  { from: "d7", to: "d5" }, // 1... d5
+  { from: "c2", to: "c4" }, // 2. c4
+  { from: "e7", to: "e6" }, // 2... e6
+  { from: "b1", to: "c3" }, // 3. Nc3
+  { from: "g8", to: "f6" }, // 3... Nf6
+  { from: "c1", to: "d2" }, // 4. Bd2 (freeing queen-side rook and king)
+  { from: "b8", to: "c6" }, // 4... Nc6
+  { from: "d1", to: "c2" }, // 5. Qc2 (preparing castling)
+  { from: "f8", to: "e7" }, // 5... Be7
+  { from: "e1", to: "c1" }  // 6. O-O-O (white queenside castling)
+];
 
 
+function AutoCheck(){
+    MoveTo(MovesList[ques].from,MovesList[ques].to)
+    ques++
+}
 
 
-function smallBotMove() {
+async function smallBotMove() {
   if (game.game_over()) {
     alert('Game Over!');
     return;
   }
-  let depth = 3;
-  let bestMove = getBestMove(game, depth);
-  // canMoveTo = game.moves({ square: bestMove.from, verbose: true });
+  const bestMove = await askStockfishMove();
+  // MoveTo(bestMove.slice(0, 2), bestMove.slice(2, 4));
+  // let depth = 3;
+  // let bestMove = getBestMove(game, depth);
+  // // canMoveTo = game.moves({ square: bestMove.from, verbose: true });
   canMoveTo=[
-    {to: bestMove.to},
-    {to: bestMove.from}
+    {to: bestMove.slice(0, 2)},
+    {to: bestMove.slice(2, 4)}
   ]
   highlightMove();
   setTimeout(() => {
-    MoveTo(bestMove.from, bestMove.to);
+    MoveTo(bestMove.slice(0, 2), bestMove.slice(2, 4));
   }, 700);
 }
+const engine = new Worker("stockfish/stockfish.js");
 
-function EvaluateuateBoard(game) {
-  const piecEvaluateues = {
-    p: 100,
-    n: 320,
-    b: 330,
-    r: 500,
-    q: 900,
-    k: 20000
-  };
 
-  let board = game.board();
-  let score = 0;
 
-  for (let row of board) {
-    for (let piece of row) {
-      if (piece) {
-        let value = piecEvaluateues[piece.type];
-        score += piece.color === 'w' ? value : -value;
+function askStockfishMove() {
+  return new Promise((resolve) => {
+    const fen = game.fen();
+    engine.postMessage("position fen " + fen);
+    engine.postMessage("go movetime 2000");
+
+
+    engine.onmessage = function (event) {
+      if (typeof event.data === "string" && event.data.startsWith("bestmove")) {
+        const best = event.data.split(" ")[1];
+        resolve(best); 
       }
-    }
-  }
-  return score;
+    };
+  });
 }
-
-// Minimax with alpha-beta pruning
-function minimax(game, depth, alpha, beta, isMaximizing) {
-  if (depth === 0 || game.game_over()) {
-    return EvaluateuateBoard(game);
-  }
-
-  let moves = game.moves({ verbose: true });
-
-  if (isMaximizing) {
-    let maxEvaluate = -Infinity;
-    for (let move of moves) {
-      game.move(move);
-      let Evaluate = minimax(game, depth - 1, alpha, beta, false);
-      game.undo();
-      maxEvaluate = Math.max(maxEvaluate, Evaluate);
-      alpha = Math.max(alpha, Evaluate);
-      if (beta <= alpha) break;
-    }
-    return maxEvaluate;
-  } else {
-    let minEvaluate = Infinity;
-    for (let move of moves) {
-      game.move(move);
-      let Evaluate = minimax(game, depth - 1, alpha, beta, true);
-      game.undo();
-      minEvaluate = Math.min(minEvaluate, Evaluate);
-      beta = Math.min(beta, Evaluate);
-      if (beta <= alpha) break;
-    }
-    return minEvaluate;
-  }
-}
-
-function getBestMove(game, depth) {
-  let moves = game.moves({ verbose: true });
-  let bestMove = null;
-  let bestValue = -Infinity;
-
-  for (let move of moves) {
-    game.move(move);
-    let boardValue = minimax(game, depth - 1, -Infinity, Infinity, false);
-    game.undo();
-    if (boardValue > bestValue) {
-      bestValue = boardValue;
-      bestMove = move;
-    }
-  }
-  return bestMove;
-}
-
-
 
 
 function TurnDisplay(turn){
@@ -468,34 +431,11 @@ function ShadowAnimation(obj,opacity,color,scale,duration,delay){
 }
 
 
-
-function MoveTo(from,To){
-  if(gamepause){
-    return
-  }
-  gamepause=true;
-  
-  
-  let PieceToMove=null,ToSquare=Squares[To];
-  for(let i=0;i<ChessPieces.length;i++){
-    if(from==ChessPieces[i].userData.NowAt){
-      PieceToMove=ChessPieces[i];
-      break;
-    }
-  }
-  if(PieceToMove && ToSquare){
-    clearSelectPiece();
-    let move = game.move({ from: from, to: To, promotion: 'q' });
-    if(move==null){
-      gamepause=false
-      return
-    }
-    let delay=CapturePiece(To)?.1:0;
-    PieceToMove.userData.NowAt=To
+function MoveAnimation(PieceToMove,fromSquare,ToSquare,delay,jump){
     const fromWorld = new THREE.Vector3();
     const toWorld   = new THREE.Vector3();
 
-    Squares[from].getWorldPosition(fromWorld);
+    fromSquare.getWorldPosition(fromWorld);
     ToSquare.getWorldPosition(toWorld);
 
     let distance = fromWorld.distanceTo(toWorld);
@@ -508,9 +448,7 @@ function MoveTo(from,To){
       distance=.15;
     }
     const duration = distance *baseSpeed;
-    
-
-    if(PieceToMove.name.includes("Knight")){
+    if(jump){
 
       gsap.to(PieceToMove.position, {
         x: ToSquare.userData.MainPosition.x,
@@ -549,6 +487,56 @@ function MoveTo(from,To){
         ease: "power1"
       });
     }
+    return duration;
+}
+
+
+
+function MoveTo(from,To){
+  if(gamepause){
+    return
+  }
+  gamepause=true;
+  
+  
+  let PieceToMove=null,ToSquare=Squares[To];
+  for(let i=0;i<ChessPieces.length;i++){
+    if(from==ChessPieces[i].userData.NowAt){
+      PieceToMove=ChessPieces[i];
+      break;
+    }
+  }
+  if(PieceToMove && ToSquare){
+    clearSelectPiece();
+    let move = game.move({ from: from, to: To, promotion: 'q' });
+    if(move==null){
+      gamepause=false
+      return
+    }
+
+    let delay=CapturePiece(To)?.1:0;
+    PieceToMove.userData.NowAt=To
+    const duration=MoveAnimation(PieceToMove,Squares[from],ToSquare,delay,(PieceToMove.name.includes("Knight")))
+    if((move.san=="O-O")||(move.san=="O-O-O")){
+      let fromPoint=null,toPoint=null;
+      if(move.san=="O-O"){
+        fromPoint=(move.color=='w')?"h1":"h8";
+        toPoint=(move.color=='w')?"f1":"f8";
+      }else{
+        fromPoint=(move.color=='w')?"a1":"a8";
+        toPoint=(move.color=='w')?"d1":"d8";
+      }
+      if(toPoint && fromPoint){
+        for(let i=0;i<ChessPieces.length;i++){
+          if(ChessPieces[i].userData.NowAt==fromPoint){
+            ChessPieces[i].userData.NowAt=toPoint;
+            MoveAnimation(ChessPieces[i],Squares[fromPoint],Squares[toPoint],delay,true)
+            break
+          }
+        }
+      }
+    }
+    
     if(move.promotion){
       let thecolor=(move.color=='w')?"White":"Black";
      for(let i=0;i<ChessPieces.length;i++){
@@ -617,11 +605,11 @@ function MoveTo(from,To){
 
 function botChecker(){
   if(botMode==3){
-    setTimeout(smallBotMove,2000)
+    setTimeout(smallBotMove,500)
   }else if(botMode==1 && (game.turn()=='w')){
-    setTimeout(smallBotMove,1000)
+    setTimeout(smallBotMove,500)
   }else if(botMode==2 && (game.turn()=='b')){
-    setTimeout(smallBotMove,1000)
+    setTimeout(smallBotMove,500)
   }
 }
 function WinnerShowCase(checkmate){
@@ -1325,4 +1313,5 @@ function CameraTop() {
 window.load3D = load3D;
 window.CameraTop = CameraTop;
 window.setBotMode = setBotMode;
+window.AutoCheck=AutoCheck
 
