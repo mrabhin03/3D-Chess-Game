@@ -1,12 +1,12 @@
 {
-    "name": "3D Portfolio",
-    "short_name": "3D Portfolio",
-    "description": "Just a small website to show my Skills in Web development 3D Modelling and Animation.",
-    "version": "1.0",
+    "name": "3D Chess game",
+    "short_name": "3D Chess game",
+    "description": "A fully interactive 3D Chess Game built using Three.js and GSAP, featuring lifelike 3D chess pieces and smooth animations. The game is powered by chess.js for accurate chess rules and move validation, allowing players to enjoy a realistic chess experience directly in the browser.",
+    "version": "3.0",
     "start_url": "index.html",
     "display": "standalone",
-    "background_color": "#0b0019",
-    "theme_color": "#0b0019",
+    "background_color": "#000000",
+    "theme_color": "#000000",
     "icons": [
       {
         "src": "assets/Logo192x192.png",
