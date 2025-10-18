@@ -29,15 +29,15 @@
   </head>
 
   <body>
-    <!-- <button class="Unmute" onclick="AutoCheck()">
-      <ion-icon name="volume-high-outline"></ion-icon>
-    </button> -->
     <button class="ViewPoint" onclick="CameraTop()">
       <ion-icon name="color-wand-outline"></ion-icon>
     </button>
+    <button class="Reset" onclick="ReloadGame()">
+      <ion-icon name="refresh-outline"></ion-icon>
+    </button>
     <div id="LoadingBox">
       <p style="opacity: 0">Loader Text</p>
-      <p class="facts" style="opacity: 0">...</p>
+      <p class="facts active none" style="opacity: 0;" id="factstemp">...</p>
       <div id="LoadInnerText">
         <div>
           <button class="loadButton">Loading...</button>
@@ -134,7 +134,7 @@
         document.getElementById("facts").classList.remove("active")
         
         setTimeout(()=>{
-          document.getElementById("facts").innerText = shuffledFacts[factIndex];
+          document.getElementById("factstemp").innerText=document.getElementById("facts").innerText = shuffledFacts[factIndex];
           document.getElementById("facts").classList.add("active")
         },300)
         factIndex++;

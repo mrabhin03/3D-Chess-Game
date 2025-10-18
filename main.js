@@ -1330,6 +1330,11 @@ function setBotMode(Mode){
   }
   setTimeout(botChecker,1000)
 }
+function ReloadGame(){
+  if(confirm("Are u sure you want to restart the game?")){
+    window.location.reload()
+  }
+}
 function CameraTop() {
   const targetPosition = new THREE.Vector3(
     0,
@@ -1354,4 +1359,5 @@ window.CameraTop = CameraTop;
 window.setBotMode = setBotMode;
 window.WinnerShowCase=WinnerShowCase
 window.savePromotion=savePromotion
+window.ReloadGame=ReloadGame
 

@@ -24,7 +24,7 @@ canvas {
   width: 100%;
   height: 100%;
 }
-.Unmute,.ViewPoint {
+.Reset,.ViewPoint {
   display: grid;
   place-content: center;
   width: 3.5rem;
@@ -39,6 +39,9 @@ canvas {
   cursor: pointer;
   background-color: #000000;
   transition: all 0.3s ease-in-out;
+}
+.Reset{
+  right: 5.5rem;
 }
 
 .Unmute:active,.Profile:active {
@@ -151,7 +154,9 @@ p {
 .facts.active{
   animation: opaOn .3s ease-in-out forwards;
 }
-
+.facts.active.none{
+  opacity: 0 !important;
+}
 @keyframes opaOn {
   0%{
     transform: translateY(20px);
